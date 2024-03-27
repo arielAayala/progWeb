@@ -45,15 +45,36 @@ function AuthContextProvider({ children }: {children: React.ReactNode}) {
 			});
 	}, []);
 
-	
+	const cerrarSesion = useCallback(() => {
+		fetch("http://localhost/progWeb/api/LogOut.php", {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			credentials: "include",
+		})
+			.then((res) => {
+				if (!res.ok) {
+					throw new Error("Ocurrio un error");
+				}
+				return res.json();
+			})
+			.then((res) => {
+				setUser(null);
+			})
+
+			.catch((error) => {
+				setUser(null);
+			});
+	}, []);
 
 	const values = useMemo(
 		() => ({
 			user,
 			iniciarSesion,
-			
+			cerrarSesion,
 		}),
-		[user, iniciarSesion]
+		[user, iniciarSesion, cerrarSesion]
 	);
 
 	return <authContext.Provider value={values}>{children}</authContext.Provider>;
