@@ -62,6 +62,13 @@ class UserController
             echo json_encode(["msg" => $exception->getMessage()]);
         }
     }
+
+    public function logOut()
+    {
+        $this->logOut();
+        http_response_code(200);
+        echo json_encode(["msg" => "Se ha cerrado sesión correctamente"]);
+    }
 }
 
 $userController = new UserController();

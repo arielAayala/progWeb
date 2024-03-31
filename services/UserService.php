@@ -43,6 +43,20 @@ class UserService
         setcookie('token', $token, $cookiesConfiguration);
     }
 
+    private function deleteCookieWithJwt()
+    {
+        $time = time();
+        $cookiesConfiguration = [
+            'expires' => ($time - 60 * 60 * 24),
+            'path' => '/',
+            'domain' => '', // leading dot for compatibility or use subdomain
+            'secure' => true,     // or false
+            'httponly' => true,    // or false
+            'samesite' => 'None' // None || Lax  || Strict
+        ];
+
+        setcookie('token', "", $cookiesConfiguration);
+    }
 
     public function post(User $user): void
     {
@@ -63,5 +77,8 @@ class UserService
         return $user;
     }
 
-
+    public function logOut(User $user)
+    {
+        $this->deleteCookieWithJwt();
+    }
 }
