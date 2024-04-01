@@ -1,8 +1,8 @@
 <?php
 
-include_once "../models/User.php";
-include_once "../repositories/UserRepository.php";
-include_once "../services/UserService.php";
+include_once "C:/xampp/htdocs/progWeb/models/User.php";
+include_once "C:/xampp/htdocs/progWeb/repositories/UserRepository.php";
+include_once "C:/xampp/htdocs/progWeb/services/UserService.php";
 
 class UserController
 {
@@ -14,7 +14,7 @@ class UserController
         $this->userService = new UserService($this->userRepository);
     }
 
-    public function post()
+    public function createUser()
     {
         try {
             $datos = json_decode(file_get_contents("php://input"));
@@ -28,7 +28,7 @@ class UserController
             $user->setEmailUser($datos->emailUser);
             $user->setPasswordUser($datos->passwordUser);
 
-            $this->userService->post($user);
+            $this->userService->createUser($user);
 
             http_response_code(200);
             echo json_encode(["msg" => "Se ha creado el usuario correctamente"]);
@@ -52,10 +52,10 @@ class UserController
             $user->setNameUser($datos->nameUser);
             $user->setPasswordUser($datos->passwordUser);
 
-            $user = $this->userService->signIn($user);
+            $this->userService->signIn($user);
 
             http_response_code(200);
-            echo json_encode(["msg" => "Se ha iniciado sesión correctamente", "data" => ["nameUser" => $user->getNameUser(), "idUser" => $user->getIdUser()]]);
+            echo json_encode(["msg" => "Se ha iniciado sesión correctamente"]);
 
         } catch (Exception $exception) {
             http_response_code($exception->getCode());

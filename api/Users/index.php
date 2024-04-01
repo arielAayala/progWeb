@@ -3,9 +3,7 @@ include_once "../controllers/UserController.php";
 
 switch ($_SERVER['REQUEST_METHOD']) {
     case "POST":
-        $userController->post();
+        $userController->createUser();
         break;
-    case "GET":
-        $userController->get();
-        break;
+
 }

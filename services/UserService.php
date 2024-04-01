@@ -3,10 +3,9 @@
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-require_once "../vendor/autoload.php";
-
-include_once "../models/User.php";
-include_once "../repositories/UserRepository.php";
+require_once "C:/xampp/htdocs/progWeb/vendor/autoload.php";
+include_once "C:/xampp/htdocs/progWeb/models/User.php";
+include_once "C:/xampp/htdocs/progWeb/repositories/UserRepository.php";
 
 class UserService
 {
@@ -24,10 +23,13 @@ class UserService
             "iat" => $time,
             "exp" => $time + (60 * 60),
             "data" => [
-                "User" => $user->getIdUser(),
-                "nameUser" => $user->getNameUser()
+                "nameUser" => $user->getNameUser(),
+                "profilesUser" => $user->getProfilesUser()
             ]
         ];
+
+
+        $token = JWT::encode($payload, "SECRET", "HS256");
 
         $cookiesConfiguration = [
             'expires' => (time() + (60 * 60)),
@@ -37,9 +39,7 @@ class UserService
             'httponly' => true,    // or false
             'samesite' => 'None' // None || Lax  || Strict
         ];
-
-        $token = JWT::encode($payload, "SECRET_JWT", "HS256");
-
+        
         setcookie('token', $token, $cookiesConfiguration);
     }
 
@@ -58,15 +58,15 @@ class UserService
         setcookie('token', "", $cookiesConfiguration);
     }
 
-    public function post(User $user): void
+    public function createUser(User $user): void
     {
         if (!strlen($user->getPasswordUser()) || !strlen($user->getNameUser()) || !strlen($user->getEmailUser())) {
             throw new Exception("Error crendenciales vacías", 400);
         }
-        $this->userRepository->post($user);
+        $this->userRepository->createUser($user);
     }
 
-    public function signIn(User $user)
+    public function signIn(User $user): void
     {
         if (!strlen($user->getPasswordUser()) || !strlen($user->getNameUser())) {
             throw new Exception("Error crendenciales vacías", 400);
@@ -74,10 +74,9 @@ class UserService
 
         $user = $this->userRepository->signIn($user);
         $this->createCookieWithJwt($user);
-        return $user;
     }
 
-    public function logOut(User $user)
+    public function logOut(): void
     {
         $this->deleteCookieWithJwt();
     }

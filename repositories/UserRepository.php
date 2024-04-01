@@ -1,12 +1,14 @@
 <?php
 
-include_once "Repository.php";
-include_once "../models/User.php";
+include_once "C:/xampp/htdocs/progWeb/models/User.php";
+include_once "C:/xampp/htdocs/progWeb/repositories/Repository.php";
+require_once "C:/xampp/htdocs/progWeb/vendor/autoload.php";
+
 
 class UserRepository extends Repository
 {
 
-    public function post(User $user): void
+    public function createUser(User $user): void
     {
         $query = "INSERT INTO user(nameUser, emailUser, passwordUser) VALUES (?,?,?)";
         $smtm = $this->con->prepare($query);
@@ -28,7 +30,13 @@ class UserRepository extends Repository
 
     public function signIn(User $user)
     {
-        $query = "SELECT idUser, nameUser, passwordUser FROM user WHERE nameUser = ?";
+        $query = "SELECT u.idUser, u.nameUser, u.passwordUser,
+                CONCAT('[', GROUP_CONCAT(JSON_OBJECT('nameProfile', p.nameProfile, 'idProfile', p.idProfile)), ']') AS profilesUser
+                FROM user u
+                INNER JOIN user_has_profile up ON u.idUser = up.User_idUser
+                INNER JOIN profile p ON p.idProfile = up.Profile_idProfile
+                WHERE u.nameUser = ?
+                GROUP BY u.idUser, u.nameUser;";
         $smtm = $this->con->prepare($query);
 
 
@@ -56,51 +64,16 @@ class UserRepository extends Repository
 
         $this->con->close();
 
+
         $user = new User();
-        $user->setIdUser($userData->idUser);
         $user->setNameUser($userData->nameUser);
+        $user->setProfilesUser($userData->profilesUser);
 
 
         return $user;
 
     }
 
-    public function getUserData(User $user)
-    {
-        $query = "SELECT u.idUser, u.nameUser, p.nameProfile, p.idProfile  FROM user u 
-        INNER JOIN user_has_profile up ON u.idUser = up.idUser  
-        INNER JOIN profile p ON p.idProfile = up.idProfile
-        WHERE u.idUser = ? ";
-        $smtm = $this->con->prepare($query);
 
-        $idUser = $user->getIdUser();
-
-        $smtm->bind_param("i", $idUser);
-        if (!$smtm->execute()) {
-            $this->con->close();
-            throw new Exception("Error al obtener usuario", 400);
-        }
-
-        $result = $smtm->get_result();
-
-        if ($result->num_rows == 0) {
-            $this->con->close();
-            throw new Exception("Error no existe el usuario", 404);
-        }
-
-
-
-        $userData = $result->fetch_object();
-
-        $this->con->close();
-
-        $user = new User();
-        $user->setIdUser($userData->idUser);
-        $user->setNameUser($userData->nameUser);
-
-        return $user;
-
-
-    }
 
 }

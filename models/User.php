@@ -48,4 +48,14 @@ class User
     {
         return $this->emailUser;
     }
+
+    public function setProfilesUser(string $profilesUser)
+    {
+        $this->profilesUser = json_decode($profilesUser, true);
+    }
+
+    public function getProfilesUser()
+    {
+        return $this->profilesUser;
+    }
 }
