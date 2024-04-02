@@ -23,8 +23,8 @@ class UserService
             "iat" => $time,
             "exp" => $time + (60 * 60),
             "data" => [
-                "nameUser" => $user->getNameUser(),
-                "profilesUser" => $user->getProfilesUser()
+                "userName" => $user->getUserName(),
+                "userRoles" => $user->getUserRoles()
             ]
         ];
 
@@ -60,7 +60,7 @@ class UserService
 
     public function createUser(User $user): void
     {
-        if (!strlen($user->getPasswordUser()) || !strlen($user->getNameUser()) || !strlen($user->getEmailUser())) {
+        if (!strlen($user->getUserPassword()) || !strlen($user->getUserName()) || !strlen($user->getUserEmail())) {
             throw new Exception("Error crendenciales vacías", 400);
         }
         $this->userRepository->createUser($user);
@@ -68,7 +68,7 @@ class UserService
 
     public function signIn(User $user): User
     {
-        if (!strlen($user->getPasswordUser()) || !strlen($user->getEmailUser())) {
+        if (!strlen($user->getUserPassword()) || !strlen($user->getUserEmail())) {
             throw new Exception("Error crendenciales vacías", 400);
         }
 

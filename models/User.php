@@ -3,59 +3,59 @@
 class User
 {
 
-    private int $idUser;
-    private string $nameUser;
-    private string $emailUser;
-    private string $passwordUser;
-    private array $profilesUser;
+    private int $userId;
+    private string $userName;
+    private string $userEmail;
+    private string $userPassword;
+    private array $userRoles;
 
-    public function setIdUser($idUser)
+    public function setUserId($userId)
     {
-        $this->idUser = $idUser;
+        $this->userId = $userId;
     }
 
-    public function getIdUser()
+    public function getUserId()
     {
-        return $this->idUser;
+        return $this->userId;
     }
 
-    public function setNameUser($nameUser)
+    public function setUserName($userName)
     {
-        $this->nameUser = $nameUser;
+        $this->userName = $userName;
     }
 
-    public function getNameUser()
+    public function getUserName()
     {
-        return $this->nameUser;
+        return $this->userName;
     }
 
-    public function setPasswordUser($passwordUser)
+    public function setUserPassword($userPassword)
     {
-        $this->passwordUser = $passwordUser;
+        $this->userPassword = $userPassword;
     }
 
-    public function getPasswordUser()
+    public function getUserPassword()
     {
-        return $this->passwordUser;
+        return $this->userPassword;
     }
 
-    public function setEmailUser($emailUser)
+    public function setUserEmail($userEmail)
     {
-        $this->emailUser = $emailUser;
+        $this->userEmail = $userEmail;
     }
 
-    public function getEmailUser()
+    public function getUserEmail()
     {
-        return $this->emailUser;
+        return $this->userEmail;
     }
 
-    public function setProfilesUser(string $profilesUser)
+    public function setUserRoles(string $userRoles)
     {
-        $this->profilesUser = json_decode($profilesUser, true);
+        $this->userRoles = json_decode($userRoles, true);
     }
 
-    public function getProfilesUser()
+    public function getUserRoles()
     {
-        return $this->profilesUser;
+        return $this->userRoles;
     }
 }

@@ -19,23 +19,23 @@ class UserController
         try {
             $datos = json_decode(file_get_contents("php://input"));
 
-            if (!isset($datos->nameUser, $datos->passwordUser, $datos->emailUser)) {
+            if (!isset($datos->userName, $datos->userPassword, $datos->userEmail)) {
                 throw new Exception("Error faltan crendenciales", 400);
             }
 
             $user = new User();
-            $user->setNameUser($datos->nameUser);
-            $user->setEmailUser($datos->emailUser);
-            $user->setPasswordUser($datos->passwordUser);
+            $user->setUserName($datos->userName);
+            $user->setUserEmail($datos->userEmail);
+            $user->setUserPassword($datos->userPassword);
 
             $this->userService->createUser($user);
 
             http_response_code(200);
-            echo json_encode(["msg" => "Se ha creado el usuario correctamente"]);
+            echo json_encode(["message" => "Se ha creado el usuario correctamente", "statusCode" => 200]);
 
         } catch (Exception $exception) {
             http_response_code($exception->getCode());
-            echo json_encode(["msg" => $exception->getMessage()]);
+            echo json_encode(["error" => $exception->getMessage(), "statusCode" => $exception->getCode()]);
         }
     }
 
@@ -44,22 +44,22 @@ class UserController
     {
         try {
             $datos = json_decode(file_get_contents("php://input"));
-            if (!isset($datos->emailUser, $datos->passwordUser)) {
+            if (!isset($datos->userEmail, $datos->userPassword)) {
                 throw new Exception("Error faltan crendenciales", 400);
             }
 
             $user = new User();
-            $user->setEmailUser($datos->emailUser);
-            $user->setPasswordUser($datos->passwordUser);
+            $user->setUserEmail($datos->userEmail);
+            $user->setUserPassword($datos->userPassword);
 
             $userData = $this->userService->signIn($user);
 
             http_response_code(200);
-            echo json_encode(["message" => "Se ha iniciado sesión correctamente", "data" => ["name" => $userData->getNameUser(), "email" => "hola"]]);
+            echo json_encode(["message" => "Se ha iniciado sesión correctamente", "statusCode" => 200, "data" => ["userName" => $userData->getUserName(), "email" => $userData->getUserEmail()]]);
 
         } catch (Exception $exception) {
             http_response_code($exception->getCode());
-            echo json_encode(["error" => $exception->getMessage()]);
+            echo json_encode(["error" => $exception->getMessage(), "statusCode" => $exception->getCode()]);
         }
     }
 
@@ -67,7 +67,7 @@ class UserController
     {
         $this->logOut();
         http_response_code(200);
-        echo json_encode(["msg" => "Se ha cerrado sesión correctamente"]);
+        echo json_encode(["msg" => "Se ha cerrado sesión correctamente", "statusCode" => 200]);
     }
 }
 

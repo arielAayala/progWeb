@@ -10,14 +10,17 @@ class UserRepository extends Repository
 
     public function createUser(User $user): void
     {
-        $query = "INSERT INTO user(nameUser, emailUser, passwordUser) VALUES (?,?,?)";
-        $smtm = $this->con->prepare($query);
+        $query = "INSERT INTO users(userName, userEmail, userPassword) VALUES (?,?,?)";
+        if (!($smtm = $this->con->prepare($query))) {
+            $this->con->close();
+            throw new Exception("Error En la base de datos", 500);
+        }
 
-        $nameUser = $user->getNameUser();
-        $emailUser = $user->getEmailUser();
-        $passwordUser = password_hash($user->getPasswordUser(), PASSWORD_DEFAULT);
+        $userName = $user->getUserName();
+        $userEmail = $user->getUserEmail();
+        $userPassword = password_hash($user->getUserPassword(), PASSWORD_DEFAULT);
 
-        $smtm->bind_param("sss", $nameUser, $emailUser, $passwordUser);
+        $smtm->bind_param("sss", $userName, $userEmail, $userPassword);
 
         if (!$smtm->execute()) {
             $this->con->close();
@@ -30,20 +33,24 @@ class UserRepository extends Repository
 
     public function signIn(User $user): User
     {
-        $query = "SELECT u.idUser, u.nameUser, u.passwordUser,
-                CONCAT('[', GROUP_CONCAT(JSON_OBJECT('nameProfile', p.nameProfile, 'idProfile', p.idProfile)), ']') AS profilesUser
-                FROM user u
-                INNER JOIN user_has_profile up ON u.idUser = up.User_idUser
-                INNER JOIN profile p ON p.idProfile = up.Profile_idProfile
-                WHERE u.emailUser = ?
-                GROUP BY u.idUser, u.nameUser;";
-        $smtm = $this->con->prepare($query);
+        $query = "SELECT u.userId, u.userName, u.userPassword, u.userEmail,
+                CONCAT('[', GROUP_CONCAT(JSON_OBJECT('roleName', r.roleName, 'roleId', r.roleId)), ']') AS userRoles
+                FROM users u
+                LEFT JOIN usersroles ur ON u.userId = ur.userId
+                LEFT JOIN roles r ON r.roleId = ur.roleId
+                WHERE u.userEmail = ?
+                GROUP BY u.userId, u.userName;";
+
+        if (!($smtm = $this->con->prepare($query))) {
+            $this->con->close();
+            throw new Exception("Error en la Base de datos", 500);
+        }
 
 
-        $emailUser = $user->getEmailUser();
-        $passwordUser = $user->getPasswordUser();
+        $userEmail = $user->getUserEmail();
+        $userPassword = $user->getUserPassword();
 
-        $smtm->bind_param("s", $emailUser);
+        $smtm->bind_param("s", $userEmail);
         if (!$smtm->execute()) {
             $this->con->close();
             throw new Exception("Error al iniciar Sesión el usuario", 400);
@@ -57,7 +64,7 @@ class UserRepository extends Repository
         }
 
         $userData = $result->fetch_object();
-        if (!(password_verify($passwordUser, $userData->passwordUser))) {
+        if (!(password_verify($userPassword, $userData->userPassword))) {
             $this->con->close();
             throw new Exception("Error Usuario o contraseña incorrecta", 404);
         }
@@ -66,8 +73,9 @@ class UserRepository extends Repository
 
 
         $user = new User();
-        $user->setNameUser($userData->nameUser);
-        $user->setProfilesUser($userData->profilesUser);
+        $user->setUserName($userData->userName);
+        $user->setUserEmail($userData->userEmail);
+        $user->setUserRoles($userData->userRoles);
 
 
         return $user;
