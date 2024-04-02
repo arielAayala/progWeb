@@ -28,22 +28,22 @@ class UserRepository extends Repository
     }
 
 
-    public function signIn(User $user)
+    public function signIn(User $user): User
     {
         $query = "SELECT u.idUser, u.nameUser, u.passwordUser,
                 CONCAT('[', GROUP_CONCAT(JSON_OBJECT('nameProfile', p.nameProfile, 'idProfile', p.idProfile)), ']') AS profilesUser
                 FROM user u
                 INNER JOIN user_has_profile up ON u.idUser = up.User_idUser
                 INNER JOIN profile p ON p.idProfile = up.Profile_idProfile
-                WHERE u.nameUser = ?
+                WHERE u.emailUser = ?
                 GROUP BY u.idUser, u.nameUser;";
         $smtm = $this->con->prepare($query);
 
 
-        $nameUser = $user->getNameUser();
+        $emailUser = $user->getEmailUser();
         $passwordUser = $user->getPasswordUser();
 
-        $smtm->bind_param("s", $nameUser);
+        $smtm->bind_param("s", $emailUser);
         if (!$smtm->execute()) {
             $this->con->close();
             throw new Exception("Error al iniciar Sesión el usuario", 400);

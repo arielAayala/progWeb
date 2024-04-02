@@ -39,7 +39,7 @@ class UserService
             'httponly' => true,    // or false
             'samesite' => 'None' // None || Lax  || Strict
         ];
-        
+
         setcookie('token', $token, $cookiesConfiguration);
     }
 
@@ -66,14 +66,16 @@ class UserService
         $this->userRepository->createUser($user);
     }
 
-    public function signIn(User $user): void
+    public function signIn(User $user): User
     {
-        if (!strlen($user->getPasswordUser()) || !strlen($user->getNameUser())) {
+        if (!strlen($user->getPasswordUser()) || !strlen($user->getEmailUser())) {
             throw new Exception("Error crendenciales vacías", 400);
         }
 
         $user = $this->userRepository->signIn($user);
         $this->createCookieWithJwt($user);
+
+        return $user;
     }
 
     public function logOut(): void

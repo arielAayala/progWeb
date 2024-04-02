@@ -44,22 +44,22 @@ class UserController
     {
         try {
             $datos = json_decode(file_get_contents("php://input"));
-            if (!isset($datos->nameUser, $datos->passwordUser)) {
+            if (!isset($datos->emailUser, $datos->passwordUser)) {
                 throw new Exception("Error faltan crendenciales", 400);
             }
 
             $user = new User();
-            $user->setNameUser($datos->nameUser);
+            $user->setEmailUser($datos->emailUser);
             $user->setPasswordUser($datos->passwordUser);
 
-            $this->userService->signIn($user);
+            $userData = $this->userService->signIn($user);
 
             http_response_code(200);
-            echo json_encode(["msg" => "Se ha iniciado sesión correctamente"]);
+            echo json_encode(["message" => "Se ha iniciado sesión correctamente", "data" => ["name" => $userData->getNameUser(), "email" => "hola"]]);
 
         } catch (Exception $exception) {
             http_response_code($exception->getCode());
-            echo json_encode(["msg" => $exception->getMessage()]);
+            echo json_encode(["error" => $exception->getMessage()]);
         }
     }
 
