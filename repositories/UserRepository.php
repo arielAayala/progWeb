@@ -8,6 +8,36 @@ require_once "C:/xampp/htdocs/progWeb/vendor/autoload.php";
 class UserRepository extends Repository
 {
 
+    public function getAllUsers(): array
+    {
+        $query = "SELECT u.userId, u.userName, u.userEmail,
+                CONCAT('[', GROUP_CONCAT(JSON_OBJECT('roleName', r.roleName, 'roleId', r.roleId)), ']') AS userRoles
+                FROM users u
+                LEFT JOIN usersroles ur ON u.userId = ur.userId
+                LEFT JOIN roles r ON r.roleId = ur.roleId
+                GROUP BY u.userId, u.userName;";
+
+        if (!($smtm = $this->con->prepare($query))) {
+            $this->con->close();
+            throw new Exception("Error En la base de datos", 500);
+        }
+
+        if (!$smtm->execute()) {
+            $this->con->close();
+            throw new Exception("Error al crear el usuario", 400);
+        }
+
+        $result = $smtm->get_result();
+        $allUsers = [];
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $allUsers[] = $row;
+            }
+        }
+
+
+        return $allUsers;
+    }
     public function createUser(User $user): void
     {
         $query = "INSERT INTO users(userName, userEmail, userPassword) VALUES (?,?,?)";
@@ -21,6 +51,24 @@ class UserRepository extends Repository
         $userPassword = password_hash($user->getUserPassword(), PASSWORD_DEFAULT);
 
         $smtm->bind_param("sss", $userName, $userEmail, $userPassword);
+
+        if (!$smtm->execute()) {
+            $this->con->close();
+            throw new Exception("Error al crear el usuario", 400);
+        }
+        /* get the last user id insert into the database */
+        $lastUserIdInsert = $this->con->insert_id;
+
+        /* By default all users start with the role user */
+        $idRoleUser = 2;
+
+        $query = "INSERT INTO usersroles(userId, roleId) VALUES (?,?)";
+        if (!($smtm = $this->con->prepare($query))) {
+            $this->con->close();
+            throw new Exception("Error En la base de datos", 500);
+        }
+
+        $smtm->bind_param("ii", $lastUserIdInsert, $idRoleUser);
 
         if (!$smtm->execute()) {
             $this->con->close();

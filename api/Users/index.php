@@ -5,5 +5,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
     case "POST":
         $userController->createUser();
         break;
+    case "GET":
+        $userController->getAllUsers();
+        break;
 
 }

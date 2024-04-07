@@ -14,6 +14,20 @@ class UserController
         $this->userService = new UserService($this->userRepository);
     }
 
+    public function getAllUsers()
+    {
+        try {
+            $allUsers = $this->userService->getAllUsers();
+
+            http_response_code(200);
+            echo json_encode(["message" => "Se ha obtenido los datos de los usuarios", "statusCode" => 200, "data" => $allUsers]);
+
+        } catch (Exception $exception) {
+            http_response_code($exception->getCode());
+            echo json_encode(["error" => $exception->getMessage(), "statusCode" => $exception->getCode()]);
+        }
+    }
+
     public function createUser()
     {
         try {
@@ -55,7 +69,7 @@ class UserController
             $userData = $this->userService->signIn($user);
 
             http_response_code(200);
-            echo json_encode(["message" => "Se ha iniciado sesión correctamente", "statusCode" => 200, "data" => ["userName" => $userData->getUserName(), "email" => $userData->getUserEmail()]]);
+            echo json_encode(["message" => "Se ha iniciado sesión correctamente", "statusCode" => 200, "data" => ["userName" => $userData->getUserName(), "email" => $userData->getUserEmail(), "userRoles" => $userData->getUserRoles()]]);
 
         } catch (Exception $exception) {
             http_response_code($exception->getCode());

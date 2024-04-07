@@ -58,10 +58,21 @@ class UserService
         setcookie('token', "", $cookiesConfiguration);
     }
 
+    public function getAllUsers(): array
+    {
+
+        $allUsers = $this->userRepository->getAllUsers();
+        return $allUsers;
+    }
+
     public function createUser(User $user): void
     {
         if (!strlen($user->getUserPassword()) || !strlen($user->getUserName()) || !strlen($user->getUserEmail())) {
             throw new Exception("Error crendenciales vacías", 400);
+        }
+
+        if (!(strlen($user->getUserPassword()) >= 8)) {
+            throw new Exception("Error la contraseña debe superar los 8 caracteres", 400);
         }
         $this->userRepository->createUser($user);
     }
