@@ -8,5 +8,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
     case "GET":
         $userController->getAllUsers();
         break;
-
+    case "DELETE":
+        $userController->deleteUser();
+        break;
 }

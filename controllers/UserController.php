@@ -28,6 +28,31 @@ class UserController
         }
     }
 
+    public function deleteUser()
+    {
+        try {
+
+
+            if (!isset($_GET["userId"])) {
+                throw new Exception("Error faltan crendenciales", 400);
+            }
+
+            $userId = $_GET["userId"];
+
+            $user = new User();
+            $user->setUserId($userId);
+
+            $this->userService->deleteUser($user);
+
+            http_response_code(200);
+            echo json_encode(["message" => "Se ha borrado el usuario correctamente", "statusCode" => 200]);
+
+        } catch (Exception $exception) {
+            http_response_code($exception->getCode());
+            echo json_encode(["error" => $exception->getMessage(), "statusCode" => $exception->getCode()]);
+        }
+    }
+
     public function createUser()
     {
         try {

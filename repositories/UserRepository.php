@@ -7,7 +7,6 @@ require_once "C:/xampp/htdocs/progWeb/vendor/autoload.php";
 
 class UserRepository extends Repository
 {
-
     public function getAllUsers(): array
     {
         $query = "SELECT u.userId, u.userName, u.userEmail,
@@ -38,6 +37,49 @@ class UserRepository extends Repository
 
         return $allUsers;
     }
+
+    public function deleteUser(User $user): void
+    {
+
+        $query = "DELETE FROM usersroles WHERE userId = ?";
+        if (!($smtm = $this->con->prepare($query))) {
+            $this->con->close();
+            throw new Exception("Error En la base de datos", 500);
+        }
+
+        $userId = $user->getUserId();
+
+        $smtm->bind_param("i", $userId);
+
+        if (!$smtm->execute()) {
+            $this->con->close();
+            throw new Exception("Error al borrar los roles del usuario", 400);
+        }
+
+        if ($smtm->affected_rows == 0) {
+            $this->con->close();
+            throw new Exception("Error usuario inexistente", 404);
+        }
+
+        $query = "DELETE FROM users WHERE userId= ?";
+        if (!($smtm = $this->con->prepare($query))) {
+            $this->con->close();
+            throw new Exception("Error En la base de datos", 500);
+        }
+
+        $smtm->bind_param("i", $userId);
+
+        if (!$smtm->execute()) {
+            $this->con->close();
+            throw new Exception("Error al borrar el usuario", 400);
+        }
+
+        if ($smtm->affected_rows == 0) {
+            $this->con->close();
+            throw new Exception("Error usuario inexistente", 404);
+        }
+    }
+
     public function createUser(User $user): void
     {
         $query = "INSERT INTO users(userName, userEmail, userPassword) VALUES (?,?,?)";

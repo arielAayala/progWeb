@@ -65,6 +65,14 @@ class UserService
         return $allUsers;
     }
 
+    public function deleteUser(User $user)
+    {
+        if (!strlen($user->getUserId())) {
+            throw new Exception("Error falta el id para eliminar el usuario", 400);
+        }
+        $this->userRepository->deleteUser($user);
+    }
+
     public function createUser(User $user): void
     {
         if (!strlen($user->getUserPassword()) || !strlen($user->getUserName()) || !strlen($user->getUserEmail())) {
