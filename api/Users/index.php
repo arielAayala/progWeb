@@ -11,4 +11,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
     case "DELETE":
         $userController->deleteUser();
         break;
+    case "PUT":
+        $userController->updateUser();
+        break;
 }

@@ -73,6 +73,17 @@ class UserService
         $this->userRepository->deleteUser($user);
     }
 
+    public function updateUser(User $user): User
+    {
+        if (!strlen($user->getUserEmail()) || !strlen($user->getUserName())) {
+            throw new Exception("Error crendenciales vacías", 400);
+        }
+
+        $user = $this->userRepository->updateUser($user);
+
+        return $user;
+    }
+
     public function createUser(User $user): void
     {
         if (!strlen($user->getUserPassword()) || !strlen($user->getUserName()) || !strlen($user->getUserEmail())) {

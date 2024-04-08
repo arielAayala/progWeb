@@ -28,14 +28,42 @@ class UserController
         }
     }
 
+    public function updateUser()
+    {
+        try {
+
+            $datos = json_decode(file_get_contents("php://input"));
+
+            if (!isset($datos->userName, $datos->userEmail, $_GET["userId"])) {
+                throw new Exception("Error faltan crendenciales", 400);
+            }
+
+            $userId = $_GET["userId"];
+
+            $user = new User();
+            $user->setUserId($userId);
+            $user->setUserEmail($datos->userEmail);
+            $user->setUserName($datos->userName);
+
+            $userData = $this->userService->updateUser($user);
+
+            http_response_code(200);
+            echo json_encode(["message" => "Se ha actualizado correctamente el usuario", "statusCode" => 200, "data" => ["userName" => $userData->getUserName(), "email" => $userData->getUserEmail(), "userRoles" => $userData->getUserRoles()]]);
+
+        } catch (Exception $exception) {
+            http_response_code($exception->getCode());
+            echo json_encode(["error" => $exception->getMessage(), "statusCode" => $exception->getCode()]);
+        }
+    }
+
     public function deleteUser()
     {
         try {
 
-
             if (!isset($_GET["userId"])) {
                 throw new Exception("Error faltan crendenciales", 400);
             }
+
 
             $userId = $_GET["userId"];
 
