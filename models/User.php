@@ -3,11 +3,21 @@
 class User
 {
 
-    private int $userId;
-    private string $userName;
-    private string $userEmail;
-    private string $userPassword;
+    private int|null $userId;
+    private string|null $userName;
+    private string|null $userEmail;
+    private string|null $userPassword;
+
+    /* UserRoles is an array of Role objects */
     private array $userRoles;
+
+    public function __construct(int $id = null, string $name = null, string $email = null, string $password = null, array $roles = null)
+    {
+        $this->userId = $id;
+        $this->userName = $name;
+        $this->userEmail = $email;
+        $this->userPassword = $password;
+    }
 
     public function setUserId($userId)
     {
@@ -49,9 +59,9 @@ class User
         return $this->userEmail;
     }
 
-    public function setUserRoles(string $userRoles)
+    public function setUserRoles(array $userRoles)
     {
-        $this->userRoles = json_decode($userRoles, true);
+        $this->userRoles = $userRoles;
     }
 
     public function getUserRoles()

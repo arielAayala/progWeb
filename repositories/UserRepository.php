@@ -9,12 +9,7 @@ class UserRepository extends Repository
 {
     public function getAllUsers(): array
     {
-        $query = "SELECT u.userId, u.userName, u.userEmail,
-                CONCAT('[', GROUP_CONCAT(JSON_OBJECT('roleName', r.roleName, 'roleId', r.roleId)), ']') AS userRoles
-                FROM users u
-                LEFT JOIN usersroles ur ON u.userId = ur.userId
-                LEFT JOIN roles r ON r.roleId = ur.roleId
-                GROUP BY u.userId, u.userName;";
+        $query = "SELECT userId, userName, userEmail FROM users";
 
         if (!($smtm = $this->con->prepare($query))) {
             $this->con->close();
@@ -27,7 +22,9 @@ class UserRepository extends Repository
         }
 
         $result = $smtm->get_result();
+
         $allUsers = [];
+
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 $allUsers[] = $row;
@@ -37,10 +34,10 @@ class UserRepository extends Repository
         return $allUsers;
     }
 
-    public function deleteUser(User $user): void
+    public function getUser(User $user)
     {
+        $query = "SELECT userId, userName, userEmail FROM users WHERE userId = ?";
 
-        $query = "DELETE FROM usersroles WHERE userId = ?";
         if (!($smtm = $this->con->prepare($query))) {
             $this->con->close();
             throw new Exception("Error En la base de datos", 500);
@@ -52,7 +49,34 @@ class UserRepository extends Repository
 
         if (!$smtm->execute()) {
             $this->con->close();
-            throw new Exception("Error al borrar los roles del usuario", 400);
+            throw new Exception("Error al crear el usuario", 400);
+        }
+
+        $result = $smtm->get_result();
+        $userData = $result->fetch_object();
+
+        $this->con->close();
+
+        $user = new User($userData->userId, $userData->userName, $userData->userEmail);
+
+        return $user;
+    }
+
+    public function deleteUser(User $user): void
+    {
+        $query = "DELETE FROM usersroles WHERE userId = ?";
+
+        if (!($smtm = $this->con->prepare($query))) {
+            $this->con->close();
+            throw new Exception("Error En la base de datos", 500);
+        }
+
+        $userId = $user->getUserId();
+        $smtm->bind_param("i", $userId);
+
+        if (!$smtm->execute()) {
+            $this->con->close();
+            throw new Exception("Error al borrar los roles del usuario", 500);
         }
 
         if ($smtm->affected_rows == 0) {
@@ -60,7 +84,8 @@ class UserRepository extends Repository
             throw new Exception("Error usuario inexistente", 404);
         }
 
-        $query = "DELETE FROM users WHERE userId= ?";
+        $query = "DELETE FROM users WHERE userId = ?";
+
         if (!($smtm = $this->con->prepare($query))) {
             $this->con->close();
             throw new Exception("Error En la base de datos", 500);
@@ -70,7 +95,7 @@ class UserRepository extends Repository
 
         if (!$smtm->execute()) {
             $this->con->close();
-            throw new Exception("Error al borrar el usuario", 400);
+            throw new Exception("Error al borrar el usuario", 500);
         }
 
         if ($smtm->affected_rows == 0) {
@@ -81,11 +106,7 @@ class UserRepository extends Repository
 
     public function updateUser(User $user): User
     {
-        $query = "UPDATE users SET 
-            userName = ?,
-            userEmail = ?
-            WHERE userId = ?
-        ";
+        $query = "UPDATE users SET userName = ?, userEmail = ? WHERE userId = ?";
 
         if (!($smtm = $this->con->prepare($query))) {
             $this->con->close();
@@ -100,7 +121,7 @@ class UserRepository extends Repository
 
         if (!$smtm->execute()) {
             $this->con->close();
-            throw new Exception("Error al actualizar el usuario", 400);
+            throw new Exception("Error al actualizar el usuario", 500);
         }
 
         if ($smtm->affected_rows == 0) {
@@ -108,42 +129,15 @@ class UserRepository extends Repository
             throw new Exception("Error usuario inexistente", 404);
         }
 
-        $query = "SELECT u.userId, u.userName, u.userEmail,
-                CONCAT('[', GROUP_CONCAT(JSON_OBJECT('roleName', r.roleName, 'roleId', r.roleId)), ']') AS userRoles
-                FROM users u
-                LEFT JOIN usersroles ur ON u.userId = ur.userId
-                LEFT JOIN roles r ON r.roleId = ur.roleId
-                WHERE u.userId = ?
-                GROUP BY u.userId, u.userName;";
+        $user = new User($smtm->insert_id);
 
-        if (!($smtm = $this->con->prepare($query))) {
-            $this->con->close();
-            throw new Exception("Error En la base de datos", 500);
-        }
-
-        $smtm->bind_param("i", $userId);
-
-        if (!$smtm->execute()) {
-            $this->con->close();
-            throw new Exception("Error al crear el usuario", 400);
-        }
-
-        $result = $smtm->get_result();
-        $userData = $result->fetch_object();
-
-        $this->con->close();
-
-        $user = new User();
-        $user->setUserName($userData->userName);
-        $user->setUserEmail($userData->userEmail);
-        $user->setUserRoles($userData->userRoles);
-
-        return $user;
+        return $this->getUser($user);
     }
 
     public function createUser(User $user): void
     {
         $query = "INSERT INTO users(userName, userEmail, userPassword) VALUES (?,?,?)";
+
         if (!($smtm = $this->con->prepare($query))) {
             $this->con->close();
             throw new Exception("Error En la base de datos", 500);
@@ -184,24 +178,18 @@ class UserRepository extends Repository
 
     public function signIn(User $user): User
     {
-        $query = "SELECT u.userId, u.userName, u.userPassword, u.userEmail,
-                CONCAT('[', GROUP_CONCAT(JSON_OBJECT('roleName', r.roleName, 'roleId', r.roleId)), ']') AS userRoles
-                FROM users u
-                LEFT JOIN usersroles ur ON u.userId = ur.userId
-                LEFT JOIN roles r ON r.roleId = ur.roleId
-                WHERE u.userEmail = ?
-                GROUP BY u.userId, u.userName";
+        $query = "SELECT userId, userName, userPassword, userEmail FROM users  WHERE u.userEmail = ?";
 
         if (!($smtm = $this->con->prepare($query))) {
             $this->con->close();
             throw new Exception("Error en la Base de datos", 500);
         }
 
-
         $userEmail = $user->getUserEmail();
         $userPassword = $user->getUserPassword();
 
         $smtm->bind_param("s", $userEmail);
+
         if (!$smtm->execute()) {
             $this->con->close();
             throw new Exception("Error al iniciar Sesión el usuario", 400);
@@ -215,6 +203,7 @@ class UserRepository extends Repository
         }
 
         $userData = $result->fetch_object();
+
         if (!(password_verify($userPassword, $userData->userPassword))) {
             $this->con->close();
             throw new Exception("Error Usuario o contraseña incorrecta", 404);
@@ -222,17 +211,9 @@ class UserRepository extends Repository
 
         $this->con->close();
 
-
-        $user = new User();
-        $user->setUserName($userData->userName);
-        $user->setUserEmail($userData->userEmail);
-        $user->setUserRoles($userData->userRoles);
-
+        $user = new User($userData->userId, $userData->userName, $userData->userEmail);
 
         return $user;
 
     }
-
-
-
 }
